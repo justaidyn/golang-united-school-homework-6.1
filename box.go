@@ -28,43 +28,76 @@ func (b *box) AddShape(shape Shape) error {
 // GetByIndex allows getting shape by index
 // whether shape by index doesn't exist or index went out of the range, then it returns an error
 func (b *box) GetByIndex(i int) (Shape, error) {
-	out, err := b.shapes[i]
-	if err != nil {
-		return fmt.Errorf("box is at max capacity (%d)", i)
+	if err := b.checkIndex(i); err != nil {
+		return nil, err
 	}
 	return b.shapes[i], nil
-
 }
 
 // ExtractByIndex allows getting shape by index and removes this shape from the list.
 // whether shape by index doesn't exist or index went out of the range, then it returns an error
 func (b *box) ExtractByIndex(i int) (Shape, error) {
-	panic("implement me")
-
+	if err := b.checkIndex(i); err != nil {
+		return nil, err
+	}
+	result := b.shapes[i]
+	shapes := append(b.shapes[:i], b.shapes[i+1:]...)
+	b.shapes = shapes
+	return result, nil
 }
 
 // ReplaceByIndex allows replacing shape by index and returns removed shape.
 // whether shape by index doesn't exist or index went out of the range, then it returns an error
 func (b *box) ReplaceByIndex(i int, shape Shape) (Shape, error) {
-	panic("implement me")
+	if err := b.checkIndex(i); err != nil {
+		return nil, err
+	}
+	result := b.shapes[i]
+	b.shapes[i] = shape
+	return result, nil
 
 }
 
 // SumPerimeter provides sum perimeter of all shapes in the list.
 func (b *box) SumPerimeter() float64 {
-	panic("implement me")
+	var sum float64
+	for _, shape := range b.shapes {
+		sum += shape.CalcPerimeter()
+	}
+	return sum
 
 }
 
 // SumArea provides sum area of all shapes in the list.
 func (b *box) SumArea() float64 {
-	panic("implement me")
+	var sum float64
+	for _, shape := range b.shapes {
+		sum += shape.CalcArea()
+	}
+	return sum
 
 }
 
 // RemoveAllCircles removes all circles in the list
 // whether circles are not exist in the list, then returns an error
 func (b *box) RemoveAllCircles() error {
-	panic("implement me")
+	result := make([]Shape, 0, len(b.shapes))
+	for _, shape := range b.shapes {
+		_, ok := shape.(*Circle)
+		if !ok {
+			result = append(result, shape)
+		}
+	}
+	if len(result) == len(b.shapes) {
+		return fmt.Errorf("box does not contain Circles")
+	}
+	b.shapes = result
+	return nil
 
+}
+func (b *box) checkIndex(i int) error {
+	if (i < 0) || (i >= len(b.shapes)) {
+		return fmt.Errorf("index %d is out of range", i)
+	}
+	return nil
 }
